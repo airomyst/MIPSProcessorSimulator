@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: /home/airomyst/IdeaProjects/MipsProcessorSimulator/src/MipsProcessor/Processor.java
- sProcessor/Processor.java
-Main-Class: MipsProcessor.Processor
-
