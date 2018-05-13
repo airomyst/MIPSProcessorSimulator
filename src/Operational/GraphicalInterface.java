@@ -1,6 +1,8 @@
 package Operational;
 
 
+import MipsProcessor.Processor;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -9,15 +11,18 @@ import java.io.PrintStream;
 
 import static Operational.Functions.getRegName;
 
+/**This class represents the GUI of the application*/
 public class GraphicalInterface extends JFrame implements ActionListener{
 
+    // Initializes the GUI components
     private JFileChooser fc = new JFileChooser();
     private JButton ClrBtn = new JButton("Roll Back");
     private JTextField PCVal = new JTextField("0");
     private JLabel PClbl = new JLabel("PC Value");
     private JTextField DataLocVal = new JTextField("0");
-    private JLabel DataLoclbl = new JLabel("Data Address");
+    private JLabel DataLoclbl = new JLabel("Data Address"); // For data memory location of user provided data
     private JButton StpBtn = new JButton("Step Execution");
+    private JButton fullexecBtn = new JButton("Full Execution");
     private JPanel btmPnl = new JPanel();
     private JTextArea txtArea = new JTextArea();
     private JScrollPane scrlTxtArea = new JScrollPane(txtArea);
@@ -43,7 +48,7 @@ public class GraphicalInterface extends JFrame implements ActionListener{
 
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 
-        this.setTitle("Mips Processor Simulator V1");
+        this.setTitle("Mips Processor Simulator");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(d);
         this.setMinimumSize(new Dimension(1280, 600));
@@ -53,6 +58,7 @@ public class GraphicalInterface extends JFrame implements ActionListener{
 
         Optnmnu.add(opnMni);
 
+        // Add supported files
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Mips and Text Files", "mips", "txt");
         fc.setFileFilter(filter);
 
@@ -88,12 +94,14 @@ public class GraphicalInterface extends JFrame implements ActionListener{
         btmPnl.add(DataLoclbl);
         btmPnl.add(DataLocVal);
         btmPnl.add(StpBtn);
+        btmPnl.add(fullexecBtn);
 
         txtArea.setEditable(false);
 
         StpBtn.addActionListener(this);
         opnMni.addActionListener(this);
         ClrBtn.addActionListener(this);
+        fullexecBtn.addActionListener(this);
 
         this.add(scrlTxtArea, BorderLayout.CENTER);
         this.add(btmPnl, BorderLayout.SOUTH);
@@ -107,11 +115,11 @@ public class GraphicalInterface extends JFrame implements ActionListener{
         if (o == StpBtn) {
             if (exThread == null) {
                 if(DirVal!=null) {
-                    exThread = new ExecutionThread(Integer.parseInt(PCVal.getText()), Integer.parseInt(DataLocVal.getText()), DirVal, regVals, printStream);
-                    exThread.setDefaultUncaughtExceptionHandler((t, er) -> System.err.println(er.getMessage()));
+                    exThread = new ExecutionThread(Integer.parseInt(PCVal.getText()), Integer.parseInt(DataLocVal.getText()), DirVal, regVals, printStream, false);
+                    exThread.setDefaultUncaughtExceptionHandler((t, er) -> System.err.println( er.getMessage()));
                     exThread.start();
                 }
-                else System.out.println("you have to specify a file!");
+                else System.out.println("You have to specify a file!");
             }
             else if(exThread.getState()==Thread.State.WAITING){
                 synchronized (exThread) {
@@ -131,8 +139,7 @@ public class GraphicalInterface extends JFrame implements ActionListener{
                 DirVal = fc.getSelectedFile().getAbsolutePath();
                 txtArea.setText(txtArea.getText()+"File Loaded Successfully!\n");
             }
-            if(exThread!=null) exThread=null;
-
+            exThread=null;
         }
 
         else if (o == ClrBtn) {
@@ -140,9 +147,21 @@ public class GraphicalInterface extends JFrame implements ActionListener{
             for(int i=0; i<32; i++) regVals[i].setText("0");
             txtArea.setText("");
             memTxtArea.setText("");
-            if(exThread!=null) exThread=null;
+            exThread=null;
+        }
+
+        else  if (o == fullexecBtn){
+            if(DirVal!=null) {
+                for (int i = 0; i < 32; i++) regVals[i].setText("0");
+                txtArea.setText("");
+                memTxtArea.setText("");
+                Processor.runProcessor(Integer.parseInt(PCVal.getText()), Integer.parseInt(DataLocVal.getText()), DirVal, regVals, printStream, true);
+            }
+
+            else System.out.println("You have to specify a file!");
         }
     }
+
     public JTextArea getTxtArea(){
 
         return txtArea;

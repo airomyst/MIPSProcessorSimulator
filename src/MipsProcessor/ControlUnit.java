@@ -1,11 +1,13 @@
 package MipsProcessor;
 
+/**Thi class represents the control unit of the processor*/
 public class ControlUnit {
 
-
+    // Control unit control signals
     private boolean Branch, MemRead, MemWrite, RegWrite, isWord, Signed;
     private int ALUOP, RegDst, MemToReg, ALUSrc, Jump;
 
+    // Sets the Control unit signals
     private void setControlSignal(int RegDst, boolean Branch, boolean MemRead, boolean MemWrite, int MemToReg, int ALUOP,
                                   int ALUSrc, boolean RegWrite, int Jump, boolean isWord, boolean Signed) {
 
@@ -22,7 +24,8 @@ public class ControlUnit {
         this.Signed = Signed;
     }
 
-    public void EvaluateControlSignal(int opcode) {
+    /**Evaluates the values of the control unit signals according to the passed OP code*/
+    public void ExecuteControlSignal(int opcode) {
 
         switch (opcode) {
 
@@ -92,10 +95,10 @@ public class ControlUnit {
                 break;
         }
         
-        ExecuteControlUnit();
+        PrintOutputs();
     }
 
-    private void ExecuteControlUnit() {
+    private void PrintOutputs() {
 
         System.out.println("Control signal: RegDst: "+ RegDst);
         System.out.println("Control signal: Branch: "+ Boolean.compare(Branch,false));
@@ -111,56 +114,67 @@ public class ControlUnit {
 
     }
 
+    /**Returns register destination signal*/
     public int getRegDst() {
 
         return RegDst;
     }
 
+    /**Returns branching signal*/
     public boolean getBranch() {
 
         return Branch;
     }
 
+    /**Returns memory read signal*/
     public boolean getMemRead() {
 
         return MemRead;
     }
 
+    /**Returns ALUOP signal*/
     public int getALUOP() {
 
         return ALUOP;
     }
 
+    /**Returns register write signal*/
     public boolean getRegWrite() {
 
         return RegWrite;
     }
 
+    /**Returns jumping signal*/
     public int getJump() {
 
         return Jump;
     }
 
+    /**Returns memory write signal*/
     public boolean getMemWrite() {
 
         return MemWrite;
     }
 
+    /**Returns the signal to select data to be written to the register*/
     public int getMemToReg() {
 
         return MemToReg;
     }
 
+    /**Returns word reading/writing signal*/
     public boolean getIsWord() {
 
         return isWord;
     }
 
+    /**Returns signed bit reading/writing signal*/
     public boolean getSigned() {
 
         return Signed;
     }
 
+    /**Returns ALU source signal*/
     public int getALUSrc() {
 
         return ALUSrc;

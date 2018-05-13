@@ -7,8 +7,10 @@ import java.nio.file.Paths;
 
 import static java.lang.Math.pow;
 
+/**This class contains useful methods that are helpful during runtime*/
 public class Functions {
 
+    /**Returns a signed integer value from the passed string binary number*/
     public static int getSignedBin(String BinaryInteger){
 
         int res = Integer.parseInt(BinaryInteger, 2);
@@ -17,7 +19,7 @@ public class Functions {
         return res;
     }
 
-
+    /**Returns the register name provided its number*/
     public static String getRegName(int regNum){
 
         if(regNum >= 16 && regNum <= 23) return "$s"+(regNum-16);
@@ -39,6 +41,7 @@ public class Functions {
         }
     }
 
+    /**Reads a file given its path, it loads all bytes from the file with the specified encoding*/
     public static String readFile(String path, Charset encoding){
 
         byte[] encoded = new byte[0];

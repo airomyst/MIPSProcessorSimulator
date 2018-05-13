@@ -7,12 +7,12 @@ import java.util.*;
 
 import static Operational.Functions.getSignedBin;
 
-//represents both data and instructions memory
+/**This class represents both data and instructions memory*/
 public class Memory {
 
     private HashMap<Integer, byte[]> DataLocations;
     private HashMap<Integer, String> InstrctLocations;
-    private int ReadData;
+    private int ReadData; // memory output
 
     public Memory() {
 
@@ -20,9 +20,11 @@ public class Memory {
         DataLocations = new HashMap<>();
     }
 
+
+    /**Loads both data and instructions to the memory and saves them*/
     public void InitializeMemory(String PROGRAM, int PC, int DataLOC, PrintStream memPS){
 
-        //load instructions memory with the assembled instructions and fill data memory if initial data was given
+        // Loads the instructions memory with the assembled instructions and fill data memory if initial data was given
         String INSTRUCTIONS = Assembler.LoadInstructions(PROGRAM);
         Pair<HashMap<String,Integer>, String[]> DATA = Assembler.LoadData(PROGRAM, DataLOC);
         String[] BinaryInstructions;
@@ -33,7 +35,7 @@ public class Memory {
             if(DATA.getValue()!=null) {
 
                 for(int i=0;i<DATA.getValue().length;i++) {
-                    for (String word : DATA.getValue()[i].split(",")) {
+                    for (String word : DATA.getValue()[i].split("\\s*,\\s*")) {
 
                         WriteToDataMEM(Integer.parseInt(word), DataLOC, true, true, memPS);
                         DataLOC += 4;
@@ -57,14 +59,14 @@ public class Memory {
     public String FetchInstruction(int PC){
 
         String INSTRUCTION = InstrctLocations.get(PC);
-        if(INSTRUCTION!=null) ExecuteInstructionMEM(INSTRUCTION);
+        if(INSTRUCTION!=null) PrintInstructionMEMOutputs(INSTRUCTION);
 
         return INSTRUCTION;
     }
 
-    private void ExecuteInstructionMEM(String INSTRUCTION){
+    private void PrintInstructionMEMOutputs(String INSTRUCTION){
 
-        System.out.println("Psuedo-relative jump address field of instruction : " +Long.parseLong(INSTRUCTION.substring(6),2));
+        System.out.println("Pseudo-relative jump address field of instruction : " +Long.parseLong(INSTRUCTION.substring(6),2));
         System.out.println("Op Code field of instruction: " +Integer.parseInt(INSTRUCTION.substring(0,6),2));
         System.out.println("Rs field of instruction: " +Integer.parseInt(INSTRUCTION.substring(6,11), 2));
         System.out.println("Rt field of instruction: " +Integer.parseInt(INSTRUCTION.substring(11,16), 2));
@@ -74,6 +76,23 @@ public class Memory {
         System.out.println("Function code of instruction: " +Integer.parseInt(INSTRUCTION.substring(26),2));
     }
 
+    private void PrintDataMEMContents(PrintStream memPS){
+
+        memPS.println("Current memory contents:");
+        ArrayList<Integer> LOCS = new ArrayList<>(DataLocations.keySet());
+        Collections.sort(LOCS);
+        for(int LOC : LOCS){
+            int out=0;
+            for (int i = 0; i < 4; i++) out += (DataLocations.get(LOC)[i] & 0xFF) << (24 - 8 * i);
+            memPS.println("Word Address ("+LOC+ ") has the value "+out);
+        }
+        memPS.println();
+        for(int i=0;i<65;i++) memPS.print("-");
+        memPS.println();
+    }
+
+
+    /**Writes data into the data memory based on passed control signals**/
     public void WriteToDataMEM(int val, int LOC, boolean MemWrite, boolean SWord, PrintStream memPS){
 
         if (MemWrite) {
@@ -81,31 +100,38 @@ public class Memory {
             if (SWord & LOC%4!=0 || LOC < 0) {
                 throw new IllegalArgumentException("Error: Invalid writing address!");
             }
-            byte[] WriteData = new byte[4];
+            byte[] WriteData;
             if(SWord){
 
+                WriteData = new byte[4];
                 for(int i=3;i>=0;i--) WriteData[i]= (byte) ((val >> 8*(3-i)) & 0xFF);
                 DataLocations.put(LOC, WriteData);
+                memPS.println("Word Address ("+LOC+ ") now has the value "+val);
+                memPS.println();
             }
 
             else {
 
+                if (DataLocations.get(LOC-(LOC%4))==null) WriteData = new byte[4];
+                else WriteData = DataLocations.get(LOC-(LOC%4));
                 WriteData[LOC%4] = (byte) val;
                 DataLocations.put(LOC-(LOC%4),WriteData);
+                memPS.println("Byte Address ("+LOC+ ") now has the value "+val);
+                memPS.println();
             }
-
-            memPS.println("Address ("+LOC+ ") now has the value "+val);
 
         }
 
+        PrintDataMEMContents(memPS);
     }
 
+    /**Returns the output data from the data memory*/
     public int getReadData(){
 
         return ReadData;
-
     }
 
+    /**Reads data from data memory based on passed control signals*/
     public int ReadFromDataMEM(int LOC, boolean MemRead, boolean LWord, boolean Signed) {
 
         if (MemRead) {
@@ -114,9 +140,9 @@ public class Memory {
             }
 
             if (LWord) {
-
-                if (DataLocations.get(LOC) == null) ReadData = 0;
-                else for (int i = 0; i < 4; i++) ReadData += DataLocations.get(LOC)[i] << 24 - 8 * i;
+                ReadData =0;
+                if (!(DataLocations.get(LOC) == null))
+                    for (int i = 0; i < 4; i++) ReadData += (DataLocations.get(LOC)[i] & 0xFF) << (24 - 8 * i);
             }
 
             else {
@@ -129,14 +155,14 @@ public class Memory {
                 }
             }
 
-            ExecuteDataMEM(ReadData);
+            PrintDataMEMOutputs();
         }
         else System.out.println("Data memory output: Unknown");
         return ReadData;
     }
 
-    private void ExecuteDataMEM(int val){
+    private void PrintDataMEMOutputs(){
 
-        System.out.println("Data memory output: "+ val);
+        System.out.println("Data memory output: "+ ReadData);
     }
 }
