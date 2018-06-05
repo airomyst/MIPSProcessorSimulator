@@ -264,7 +264,6 @@ public class Assembler {
             INSTRUCTIONS = INSTRUCTIONS.replaceAll("\\s*.text\\s*","").replaceAll("((\\r\\n)|\\n|\\r){2,}", "\n"); //remove empty lines and the .text label
 
         INSTRUCTIONS = INSTRUCTIONS.replaceAll("\\s*$","");
-        System.out.println(INSTRUCTIONS);
         return INSTRUCTIONS;
     }
 
